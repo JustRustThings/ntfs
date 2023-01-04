@@ -709,9 +709,13 @@ impl<'n, 'f> Iterator for NtfsAttributesRaw<'n, 'f> {
 
         // It's a real attribute.
         let attribute = NtfsAttribute::new(self.file, self.items_range.start, None);
-        self.items_range.start += attribute.attribute_length() as usize;
-
-        Some(attribute)
+        let length = usize::try_from(attribute.attribute_length()).unwrap();
+        if length > 0 {
+            self.items_range.start += length;
+            Some(attribute)
+        } else {
+            None
+        }
     }
 }
 
