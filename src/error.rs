@@ -158,6 +158,12 @@ pub enum NtfsError {
         range: Range<usize>,
         size: usize,
     },
+    /// The range of update sequence number when slicing is invalid
+    InvalidUpdateSequenceNumberRange {
+        position: NtfsPosition,
+        range: Range<usize>,
+        size: usize,
+    },
     /// I/O error: {0:?}
     Io(binread::io::Error),
     /// The Logical Cluster Number (LCN) {lcn} is too big to be multiplied by the cluster size
