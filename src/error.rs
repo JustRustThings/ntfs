@@ -152,6 +152,12 @@ pub enum NtfsError {
         vcn: Vcn,
         previous_lcn: Lcn,
     },
+    /// The range of non resident value data when slicing is invalid
+    InvalidNonResidentValueDataRange {
+        position: NtfsPosition,
+        range: Range<usize>,
+        size: usize,
+    },
     /// I/O error: {0:?}
     Io(binread::io::Error),
     /// The Logical Cluster Number (LCN) {lcn} is too big to be multiplied by the cluster size
