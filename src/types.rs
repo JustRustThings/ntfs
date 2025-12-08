@@ -8,10 +8,19 @@ use core::num::NonZeroU64;
 use core::ops::{Add, AddAssign};
 
 use binrw::BinRead;
-use derive_more::{Binary, Display, From, LowerHex, Octal, UpperHex};
 
 use crate::error::{NtfsError, Result};
 use crate::ntfs::Ntfs;
+
+macro_rules! derive_fmt {
+    ($type:ty, $name:ident) => {
+        impl std::fmt::$name for $type {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+                std::fmt::$name::fmt(&self.0, f)
+            }
+        }
+    };
+}
 
 /// An absolute nonzero byte position on the NTFS filesystem.
 /// Can be used to seek, but even more often in [`NtfsError`] variants to assist with debugging.
@@ -21,7 +30,7 @@ use crate::ntfs::Ntfs;
 /// position outside the valid range.
 /// Therefore, this structure internally uses an [`Option`] of a [`NonZeroU64`] to alternatively
 /// store a `None` value if no valid position can be given.
-#[derive(Clone, Copy, Debug, Eq, From, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct NtfsPosition(Option<NonZeroU64>);
 
 impl NtfsPosition {
@@ -38,6 +47,12 @@ impl NtfsPosition {
     /// Returns the stored position, or `None` if there is no valid position.
     pub const fn value(&self) -> Option<NonZeroU64> {
         self.0
+    }
+}
+
+impl From<Option<NonZeroU64>> for NtfsPosition {
+    fn from(value: Option<NonZeroU64>) -> Self {
+        Self(value)
     }
 }
 
@@ -141,22 +156,7 @@ impl From<NonZeroU64> for NtfsPosition {
 ///
 /// NTFS divides a filesystem into clusters of a given size (power of two), see [`Ntfs::cluster_size`].
 /// The LCN is an absolute cluster index into the filesystem.
-#[derive(
-    Binary,
-    BinRead,
-    Clone,
-    Copy,
-    Debug,
-    Display,
-    Eq,
-    From,
-    LowerHex,
-    Octal,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    UpperHex,
-)]
+#[derive(BinRead, Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Lcn(u64);
 
 impl Lcn {
@@ -186,27 +186,24 @@ impl Lcn {
     }
 }
 
+impl From<u64> for Lcn {
+    fn from(value: u64) -> Self {
+        Self(value)
+    }
+}
+
+derive_fmt!(Lcn, Binary);
+derive_fmt!(Lcn, Display);
+derive_fmt!(Lcn, LowerHex);
+derive_fmt!(Lcn, Octal);
+derive_fmt!(Lcn, UpperHex);
+
 /// A Virtual Cluster Number (VCN).
 ///
 /// NTFS divides a filesystem into clusters of a given size (power of two), see [`Ntfs::cluster_size`].
 /// The VCN is a cluster index into the filesystem that is relative to a Logical Cluster Number (LCN)
 /// or relative to the start of an attribute value.
-#[derive(
-    Binary,
-    BinRead,
-    Clone,
-    Copy,
-    Debug,
-    Display,
-    Eq,
-    From,
-    LowerHex,
-    Octal,
-    Ord,
-    PartialEq,
-    PartialOrd,
-    UpperHex,
-)]
+#[derive(BinRead, Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Vcn(i64);
 
 impl Vcn {
@@ -222,3 +219,15 @@ impl Vcn {
         self.0
     }
 }
+
+impl From<i64> for Vcn {
+    fn from(value: i64) -> Self {
+        Self(value)
+    }
+}
+
+derive_fmt!(Vcn, Binary);
+derive_fmt!(Vcn, Display);
+derive_fmt!(Vcn, LowerHex);
+derive_fmt!(Vcn, Octal);
+derive_fmt!(Vcn, UpperHex);

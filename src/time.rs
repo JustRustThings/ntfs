@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use binrw::BinRead;
-use derive_more::From;
 
 #[cfg(feature = "time")]
 use {crate::error::NtfsError, time::OffsetDateTime};
@@ -22,13 +21,19 @@ const INTERVALS_PER_SECOND: u64 = 10_000_000;
 ///
 /// NTFS (and the Windows NT line of operating systems) represent time as an unsigned 64-bit integer
 /// counting the number of 100-nanosecond intervals since January 1, 1601.
-#[derive(BinRead, Clone, Copy, Debug, Eq, From, Ord, PartialEq, PartialOrd)]
+#[derive(BinRead, Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct NtfsTime(u64);
 
 impl NtfsTime {
     /// Returns the stored NT timestamp (number of 100-nanosecond intervals since January 1, 1601).
     pub fn nt_timestamp(&self) -> u64 {
         self.0
+    }
+}
+
+impl From<u64> for NtfsTime {
+    fn from(value: u64) -> Self {
+        Self(value)
     }
 }
 
